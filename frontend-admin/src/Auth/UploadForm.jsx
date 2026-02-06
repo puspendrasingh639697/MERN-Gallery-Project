@@ -100,10 +100,14 @@ const UploadForm = () => {
   };
 
   return (
-   <div className="h-screen flex overflow-hidden bg-white">
-  {/* Left Sidebar - Fixed Position */}
-  <aside className="w-64 bg-black text-white flex flex-col border-r border-gray-800">
-    {/* Sidebar Header - Top Dark */}
+  <div className="h-screen flex overflow-hidden bg-white">
+  {/* Left Sidebar */}
+  <aside
+    className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-black text-white flex flex-col border-r border-gray-800 transform transition-transform duration-300 ${
+      sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+    } md:translate-x-0`}
+  >
+    {/* Sidebar Header */}
     <div className="p-5 border-b border-gray-800">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 flex items-center justify-center">
@@ -111,7 +115,6 @@ const UploadForm = () => {
         </div>
         <div>
           <h2 className="font-bold text-lg">Admin Gallery</h2>
-          
         </div>
       </div>
     </div>
@@ -120,7 +123,10 @@ const UploadForm = () => {
     <nav className="flex-1 p-4">
       <div className="space-y-1">
         <button
-          onClick={() => setActiveTab('upload')}
+          onClick={() => {
+            setActiveTab('upload');
+            setSidebarOpen(false);
+          }}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
             activeTab === 'upload'
               ? 'bg-blue-600 text-white'
@@ -130,8 +136,12 @@ const UploadForm = () => {
           <FiUploadCloud size={18} />
           <span className="font-medium">Upload</span>
         </button>
+
         <button
-          onClick={() => setActiveTab('gallery')}
+          onClick={() => {
+            setActiveTab('gallery');
+            setSidebarOpen(false);
+          }}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
             activeTab === 'gallery'
               ? 'bg-blue-600 text-white'
@@ -147,7 +157,7 @@ const UploadForm = () => {
       </div>
     </nav>
 
-    {/* Logout Button - Bottom */}
+    {/* Logout */}
     <div className="p-4 border-t border-gray-800">
       <button
         onClick={handleLogout}
@@ -159,9 +169,17 @@ const UploadForm = () => {
     </div>
   </aside>
 
-  {/* Right Main Content - Full Height with Scroll */}
+  {/* Overlay for mobile */}
+  {sidebarOpen && (
+    <div
+      onClick={() => setSidebarOpen(false)}
+      className="fixed inset-0 bg-black/50 z-40 md:hidden"
+    />
+  )}
+
+  {/* Right Main Content */}
   <main className="flex-1 flex flex-col overflow-hidden bg-white">
-    {/* Top Header Bar - Dark */}
+    {/* Top Header */}
     <div className="bg-black text-white p-4 border-b border-gray-800">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -174,7 +192,7 @@ const UploadForm = () => {
           <h1 className="font-bold text-lg">Gallery Management</h1>
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-400">
+          <div className="hidden sm:block text-sm text-gray-400">
             {images.length} Images
           </div>
           <button
@@ -188,8 +206,8 @@ const UploadForm = () => {
       </div>
     </div>
 
-    {/* Content Area - Scrollable */}
-    <div className="flex-1 overflow-auto p-6">
+    {/* Content Area */}
+    <div className="flex-1 overflow-auto p-4 sm:p-6">
       {activeTab === 'upload' ? (
         <div className="max-w-md mx-auto">
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
@@ -230,7 +248,7 @@ const UploadForm = () => {
                   />
                   <label htmlFor="fileInput" className="cursor-pointer block">
                     <FiImage className="mx-auto text-gray-400 mb-3" size={32} />
-                    <p className="text-gray-600 font-medium">
+                    <p className="text-gray-600 font-medium break-all">
                       {image ? image.name : 'Click to choose image'}
                     </p>
                     <p className="text-sm text-gray-400 mt-1">PNG, JPG, WEBP up to 5MB</p>
@@ -275,8 +293,8 @@ const UploadForm = () => {
                   key={img._id}
                   className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-20 h-20 flex-shrink-0">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                    <div className="w-full sm:w-20 h-40 sm:h-20 flex-shrink-0">
                       <img
                         src={img.imageUrl}
                         className="w-full h-full object-cover rounded-lg"
@@ -284,12 +302,14 @@ const UploadForm = () => {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-800 text-lg mb-1">{img.title}</h3>
+                      <h3 className="font-semibold text-gray-800 text-lg mb-1 truncate">
+                        {img.title}
+                      </h3>
                       <p className="text-sm text-gray-500">
                         Uploaded: {new Date(img.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={() => handleEdit(img._id, img.title)}
                         className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors flex items-center gap-2"
@@ -330,6 +350,7 @@ const UploadForm = () => {
     </div>
   </main>
 </div>
+
 
   );
 };
