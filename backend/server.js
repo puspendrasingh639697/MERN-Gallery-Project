@@ -54,7 +54,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
+const dotenv = require('dotenv');
+  dotenv.config()
+
+  console.log("Cloud Name from Render:", process.env.CLOUD_NAME || "Backend ko key nahi mili!");
 const app = express();
 
 const adminRoutes = require('./routes/adminRoutes'); 
