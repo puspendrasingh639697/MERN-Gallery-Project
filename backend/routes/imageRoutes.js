@@ -94,19 +94,20 @@ router.delete('/:id', async (req, res) => {
 });
 
 // ❤️ Like Image Route
+// ❤️ Like Image Route (Updated & Safe)
 router.post('/like/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        
-        // Database mein 'likes' count ko 1 se badhao
+
+        // Check karo ki ID 'undefined' toh nahi aa rahi
+        if (!id || id === 'undefined') {
+            return res.status(400).json({ message: "Image ID missing hai!" });
+        }
+
         const result = await mongoose.connection.collection('images').updateOne(
             { _id: new mongoose.Types.ObjectId(id) },
-            { $inc: { likes: 1 } } // Agar likes field nahi hai toh ban jayegi
+            { $inc: { likes: 1 } }
         );
-
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ message: "Image nahi mili!" });
-        }
 
         res.json({ message: "Like ho gaya! ❤️" });
     } catch (err) {
