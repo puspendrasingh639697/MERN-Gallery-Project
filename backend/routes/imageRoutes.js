@@ -1,16 +1,8 @@
-
-
-
-
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const upload = require('../middleware/multer')
 
-// Yahan tumhara Image Model hona chahiye
-// const Image = require('../models/Image'); 
-
-// Get All Images
 router.get('/all', async (req, res) => {
     try {
         const images = await mongoose.connection.collection('images').find().toArray();
@@ -34,7 +26,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
             title: req.body.title || "Untitled",
             imageUrl: req.file.path,    // Cloudinary ka link
             public_id: req.file.filename, // Image delete karne ke liye ID
-            uploadedAt: new Date(),
+            likes: [], // Khali array shuruat mein
             createdAt: new Date()
 
         };
@@ -63,45 +55,30 @@ router.get('/all', async (req, res) => {
         res.status(500).json({ message: "Error fetching images" });
     }
 });
-router.post('/like/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { userId } = req.body;
+ router.post('/like/:id', async (req, res) => {
+  const { id } = req.params;
+  const { userId } = req.body;
 
-        if (!id || id.length !== 24) {
-            return res.status(400).json({ message: "Invalid Image ID!" });
-        }
+  const image = await mongoose.connection.collection('images').findOne({ _id: new mongoose.Types.ObjectId(id) });
 
-        const image = await mongoose.connection.collection('images').findOne({ _id: new mongoose.Types.ObjectId(id) });
+  // Safety: Agar likes pehle se number hai toh array bana do
+  let likesArray = Array.isArray(image.likes) ? image.likes : [];
 
-        // 🔥 FIX: Agar likes pehle se Number hai, toh usey Array bana do
-        if (typeof image.likes === 'number' || !Array.isArray(image.likes)) {
-            await mongoose.connection.collection('images').updateOne(
-                { _id: new mongoose.Types.ObjectId(id) },
-                { $set: { likes: [] } }
-            );
-            image.likes = []; // Local update for logic below
-        }
-
-        // ❤️ TOGGLE Logic (Like/Unlike)
-        if (image.likes.includes(userId)) {
-            await mongoose.connection.collection('images').updateOne(
-                { _id: new mongoose.Types.ObjectId(id) },
-                { $pull: { likes: userId } }
-            );
-        } else {
-            await mongoose.connection.collection('images').updateOne(
-                { _id: new mongoose.Types.ObjectId(id) },
-                { $addToSet: { likes: userId } }
-            );
-        }
-
-        const updatedImage = await mongoose.connection.collection('images').findOne({ _id: new mongoose.Types.ObjectId(id) });
-        res.json(updatedImage);
-    } catch (err) {
-        console.error("Like Error:", err);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
+  if (likesArray.includes(userId)) {
+    // Unlike logic
+    await mongoose.connection.collection('images').updateOne(
+      { _id: new mongoose.Types.ObjectId(id) },
+      { $pull: { likes: userId } }
+    );
+  } else {
+    // Like logic
+    await mongoose.connection.collection('images').updateOne(
+      { _id: new mongoose.Types.ObjectId(id) },
+      { $addToSet: { likes: userId } }
+    );
+  }
+  const updatedImage = await mongoose.connection.collection('images').findOne({ _id: new mongoose.Types.ObjectId(id) });
+  res.json(updatedImage);
 });
 
 // 🗑️ Delete Image Route
