@@ -219,22 +219,17 @@ export default function Home() {
   const fetchImages = async () => {
     try {
       const res = await axios.get(`https://mern-gallery-project.onrender.com/api/images/all?sort=${sortBy}`);
-      
-      // 🔥 FIX 1: Frontend crash na ho agar likes Array na ho
       const safeData = res.data.map(img => ({
         ...img,
         likes: Array.isArray(img.likes) ? img.likes : []
       }));
-      
       setImages(safeData);
     } catch (err) {
       console.error("Error fetching images", err);
     }
   };
 
-  useEffect(() => {
-    fetchImages();
-  }, [sortBy]);
+  useEffect(() => { fetchImages(); }, [sortBy]);
 
   const handleLogin = async () => {
     try {
@@ -246,35 +241,31 @@ export default function Home() {
 
   const handleLike = async (imageId) => {
     if (!user) return alert("Pehle Login karo bhai!");
-    if (!imageId) return console.error("Image ID missing!");
+    // 🔥 BSON Error fix: ID check karo
+    if (!imageId || imageId.length !== 24) {
+      return alert("Invalid Image ID!");
+    }
 
     try {
       const token = await user.getIdToken();
-      // 🔥 FIX 2: Backend ko userId bhej rahe hain taaki array update ho
       const res = await axios.post(
         `https://mern-gallery-project.onrender.com/api/images/like/${imageId}`,
         { userId: user.uid }, 
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // UI update logic: updated image ko list mein replace karna
-      setImages((prevImages) =>
-        prevImages.map((img) => (img._id === imageId ? {
+      setImages((prev) =>
+        prev.map((img) => (img._id === imageId ? {
             ...res.data,
             likes: Array.isArray(res.data.likes) ? res.data.likes : []
         } : img))
       );
     } catch (err) {
-      console.error("Like error:", err.response?.data || err.message);
-      alert("Like action failed! Check console.");
+      console.error("Like error:", err);
+      alert("Token validation failed or Server error!");
     }
   };
 
-  // 🔥 FIX 3: Safety check for likes array during filtering
   const filteredImages = onlyLiked
     ? images.filter((img) => Array.isArray(img.likes) && img.likes.includes(user?.uid))
     : images;
@@ -298,17 +289,11 @@ export default function Home() {
           <FiImage /> Images Gallery
         </h1>
         {user ? (
-          <button
-            onClick={() => signOut(auth)}
-            className="flex items-center gap-2 text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition font-bold"
-          >
+          <button onClick={() => signOut(auth)} className="flex items-center gap-2 text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition font-bold">
             <FiLogOut size={18} /> Logout
           </button>
         ) : (
-          <button
-            onClick={handleLogin}
-            className="flex items-center gap-2 bg-blue-400 text-white px-5 py-2 rounded-full font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200"
-          >
+          <button onClick={handleLogin} className="flex items-center gap-2 bg-blue-400 text-white px-5 py-2 rounded-full font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
             <FcGoogle size={20} /> Login with Google
           </button>
         )}
@@ -320,29 +305,14 @@ export default function Home() {
             <div className="flex flex-col items-center">
               <h2 className="text-gray-400 uppercase text-xs font-bold tracking-widest mb-4">Discovery</h2>
               <div className="inline-flex p-1 bg-gray-200 rounded-xl">
-                <button
-                  onClick={() => setOnlyLiked(false)}
-                  className={`px-6 py-2 rounded-lg font-bold text-sm transition ${!onlyLiked ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'}`}
-                >
-                  All Photos
-                </button>
-                <button
-                  onClick={() => setOnlyLiked(true)}
-                  className={`px-6 py-2 rounded-lg font-bold text-sm transition ${onlyLiked ? 'bg-white shadow-sm text-pink-600' : 'text-gray-500'}`}
-                >
-                  My Liked
-                </button>
+                <button onClick={() => setOnlyLiked(false)} className={`px-6 py-2 rounded-lg font-bold text-sm transition ${!onlyLiked ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'}`}>All Photos</button>
+                <button onClick={() => setOnlyLiked(true)} className={`px-6 py-2 rounded-lg font-bold text-sm transition ${onlyLiked ? 'bg-white shadow-sm text-pink-600' : 'text-gray-500'}`}>My Liked</button>
               </div>
             </div>
           )}
-
           <div className="flex items-center gap-3">
             <span className="text-sm font-bold text-gray-500">Sort By:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="border-2 border-blue-500 p-2 rounded-xl bg-white font-bold shadow-md outline-none cursor-pointer text-gray-700"
-            >
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="border-2 border-blue-500 p-2 rounded-xl bg-white font-bold shadow-md outline-none cursor-pointer text-gray-700">
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
             </select>
@@ -359,18 +329,15 @@ export default function Home() {
                 <div className="p-5 flex justify-between items-center">
                   <div>
                     <h3 className="font-bold text-gray-900 text-lg leading-none mb-1">{img.title}</h3>
-                    <p className="text-xs text-gray-400 font-medium">{img.createdAt ? new Date(img.createdAt).toDateString() : "Just now"}</p>
+                    <p className="text-xs text-gray-400 font-medium">{new Date(img.createdAt || Date.now()).toDateString()}</p>
                   </div>
                   <button
                     onClick={() => handleLike(img._id)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition ${
-                      Array.isArray(img.likes) && img.likes.includes(user?.uid)
-                      ? 'bg-pink-50 text-pink-600'
-                      : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                      img.likes?.includes(user?.uid) ? 'bg-pink-50 text-pink-600' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
                     }`}
                   >
-                    <FiHeart className={`text-lg ${Array.isArray(img.likes) && img.likes.includes(user?.uid) ? 'fill-current' : ''}`} />
-                    {/* 🔥 FIX 4: likes.length use karein number ki jagah */}
+                    <FiHeart className={`text-lg ${img.likes?.includes(user?.uid) ? 'fill-current' : ''}`} />
                     <span className="font-bold">{img.likes?.length || 0}</span>
                   </button>
                 </div>

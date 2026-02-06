@@ -98,25 +98,31 @@ router.get('/all', async (req, res) => {
 });
 
 // ❤️ Like Image Route
-// ❤️ Like Image Route (Updated & Safe)
+// ❤️ Like Image Route (Safety Update)
 router.post('/like/:id', async (req, res) => {
     try {
         const { id } = req.params;
+        const { userId } = req.body;
 
-        // Check karo ki ID 'undefined' toh nahi aa rahi
-        if (!id || id === 'undefined') {
-            return res.status(400).json({ message: "Image ID missing hai!" });
+        // 🔥 FIX: Valid ID check
+        if (!id || id.length !== 24) {
+            console.log("Invalid ID received:", id);
+            return res.status(400).json({ message: "Invalid Image ID!" });
         }
 
-        const result = await mongoose.connection.collection('images').updateOne(
+        await mongoose.connection.collection('images').updateOne(
             { _id: new mongoose.Types.ObjectId(id) },
-            { $inc: { likes: 1 } }
+            { $addToSet: { likes: userId || "anonymous" } }
         );
 
-        res.json({ message: "Like ho gaya! ❤️" });
+        const updatedImage = await mongoose.connection.collection('images').findOne(
+            { _id: new mongoose.Types.ObjectId(id) }
+        );
+
+        res.json(updatedImage);
     } catch (err) {
         console.error("Like Error:", err);
-        res.status(500).json({ message: "Like karne mein galti hui" });
+        res.status(500).json({ message: "Server crash rok diya gaya!" });
     }
 });
 
