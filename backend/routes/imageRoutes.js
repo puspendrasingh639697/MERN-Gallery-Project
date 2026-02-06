@@ -83,13 +83,17 @@ router.post('/upload', upload.single('image'), async (req, res) => {
 });
 
 // Delete Image
-router.delete('/:id', async (req, res) => {
+// Get All Images (Default Likes Array Fix)
+router.get('/all', async (req, res) => {
     try {
-        const { id } = req.params;
-        await mongoose.connection.collection('images').deleteOne({ _id: new mongoose.Types.ObjectId(id) });
-        res.json({ message: "Deleted successfully" });
+        const images = await mongoose.connection.collection('images').find().toArray();
+        const fixedImages = images.map(img => ({
+            ...img,
+            likes: Array.isArray(img.likes) ? img.likes : [] // Agar array nahi hai toh empty array bana do
+        }));
+        res.json(fixedImages);
     } catch (err) {
-        res.status(500).json({ message: "Delete failed" });
+        res.status(500).json({ message: "Error fetching images" });
     }
 });
 
