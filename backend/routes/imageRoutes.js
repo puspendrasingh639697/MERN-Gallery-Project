@@ -93,4 +93,26 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// ❤️ Like Image Route
+router.post('/like/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Database mein 'likes' count ko 1 se badhao
+        const result = await mongoose.connection.collection('images').updateOne(
+            { _id: new mongoose.Types.ObjectId(id) },
+            { $inc: { likes: 1 } } // Agar likes field nahi hai toh ban jayegi
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: "Image nahi mili!" });
+        }
+
+        res.json({ message: "Like ho gaya! ❤️" });
+    } catch (err) {
+        console.error("Like Error:", err);
+        res.status(500).json({ message: "Like karne mein galti hui" });
+    }
+});
+
 module.exports = router;
