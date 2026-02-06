@@ -70,7 +70,8 @@ app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:5173', 
-    'https://mern-gallery-project-aapz.vercel.app' // Tera naya Vercel link
+    'https://mern-gallery-project-aapz.vercel.app',
+    'https://mern-gallery-project-26s7.vercel.app' // Ye raha naya link jo error de raha tha
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
