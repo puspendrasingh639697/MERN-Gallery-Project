@@ -27,9 +27,6 @@ const imageRoutes = require('./routes/imageRoutes');
 
 
 
-// --- CORS FIX START ---
-
-// --- CORS FIX END ---
 
 
 
@@ -71,8 +68,7 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
 
-// testing push page
-// testing  page
+
 
 
 
