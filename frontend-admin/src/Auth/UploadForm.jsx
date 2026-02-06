@@ -299,16 +299,21 @@ const UploadForm = () => {
     }
   };
 
-  const deleteImage = async (imgId) => {
-    if (window.confirm("Should I delete it for sure?")) {
-      try {
-        await axios.delete(`${API_URL}/${imgId}`, getAuthHeaders());
-        fetchAdminImages();
-      } catch (err) {
-        alert("Delete fail!");
-      }
+ const deleteImage = async (imgId) => {
+  if (window.confirm("Should I delete it for sure?")) {
+    try {
+      // 🔥 FIX: API_URL aur ID ke beech mein "/delete" lagao
+      // Agar tumhara API_URL "https://.../api/images" hai
+      await axios.delete(`${API_URL}/delete/${imgId}`, getAuthHeaders());
+      
+      alert("Delete ho gayi! ✅");
+      fetchAdminImages(); // List refresh karne ke liye
+    } catch (err) {
+      console.error("Delete Error:", err.response?.data || err.message);
+      alert("Delete fail! Shayad backend route galat hai.");
     }
-  };
+  }
+};
 
   const handleEdit = async (id, currentTitle) => {
     const newTitle = prompt("Enter a new title:", currentTitle);

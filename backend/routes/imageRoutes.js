@@ -1,38 +1,3 @@
-// const express = require('express');
-// const router = express.Router();
-// const mongoose = require('mongoose');
-
-// // Yahan tumhara Image Model hona chahiye
-// // const Image = require('../models/Image'); 
-
-// // Get All Images
-// router.get('/all', async (req, res) => {
-//     try {
-//         const images = await mongoose.connection.collection('images').find().toArray();
-//         res.json(images);
-//     } catch (err) {
-//         res.status(500).json({ message: "Error fetching images" });
-//     }
-// });
-
-// // Upload/Post Image (Basic Setup)
-// router.post('/upload', async (req, res) => {
-//     // Yahan tumhara image upload logic aayega (Cloudinary etc.)
-//     res.json({ message: "Upload route working!" });
-// });
-
-// // Delete Image
-// router.delete('/:id', async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         await mongoose.connection.collection('images').deleteOne({ _id: new mongoose.Types.ObjectId(id) });
-//         res.json({ message: "Deleted successfully" });
-//     } catch (err) {
-//         res.status(500).json({ message: "Delete failed" });
-//     }
-// });
-
-// module.exports = router;
 
 
 
@@ -69,7 +34,9 @@ router.post('/upload', upload.single('image'), async (req, res) => {
             title: req.body.title || "Untitled",
             imageUrl: req.file.path,    // Cloudinary ka link
             public_id: req.file.filename, // Image delete karne ke liye ID
-            uploadedAt: new Date()
+            uploadedAt: new Date(),
+            createdAt: new Date()
+
         };
 
         // Images collection mein insert karo
@@ -107,17 +74,22 @@ router.post('/like/:id', async (req, res) => {
 
         const image = await mongoose.connection.collection('images').findOne({ _id: new mongoose.Types.ObjectId(id) });
 
-        // Safety: Agar likes array nahi hai toh array bana do
-        let currentLikes = Array.isArray(image.likes) ? image.likes : [];
+        // 🔥 FIX: Agar likes pehle se Number hai, toh usey Array bana do
+        if (typeof image.likes === 'number' || !Array.isArray(image.likes)) {
+            await mongoose.connection.collection('images').updateOne(
+                { _id: new mongoose.Types.ObjectId(id) },
+                { $set: { likes: [] } }
+            );
+            image.likes = []; // Local update for logic below
+        }
 
-        if (currentLikes.includes(userId)) {
-            // 🔥 UNLIKE logic: Agar ID pehle se hai, toh remove (pull) karo
+        // ❤️ TOGGLE Logic (Like/Unlike)
+        if (image.likes.includes(userId)) {
             await mongoose.connection.collection('images').updateOne(
                 { _id: new mongoose.Types.ObjectId(id) },
                 { $pull: { likes: userId } }
             );
         } else {
-            // ❤️ LIKE logic: Agar ID nahi hai, toh add karo
             await mongoose.connection.collection('images').updateOne(
                 { _id: new mongoose.Types.ObjectId(id) },
                 { $addToSet: { likes: userId } }
@@ -126,10 +98,33 @@ router.post('/like/:id', async (req, res) => {
 
         const updatedImage = await mongoose.connection.collection('images').findOne({ _id: new mongoose.Types.ObjectId(id) });
         res.json(updatedImage);
-        
     } catch (err) {
-        console.error("Like/Unlike Error:", err);
-        res.status(500).json({ message: "Operation failed" });
+        console.error("Like Error:", err);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+// 🗑️ Delete Image Route
+router.delete('/delete/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id || id.length !== 24) {
+            return res.status(400).json({ message: "Invalid ID!" });
+        }
+
+        const result = await mongoose.connection.collection('images').deleteOne({
+            _id: new mongoose.Types.ObjectId(id)
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: "Image nahi mili database mein!" });
+        }
+
+        res.json({ message: "Image delete ho gayi! ✅" });
+    } catch (err) {
+        console.error("Delete Error:", err);
+        res.status(500).json({ message: "Server error during delete" });
     }
 });
 module.exports = router;
