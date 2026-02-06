@@ -10,8 +10,10 @@ app.use(express.json());
 
 app.use(cors({
   origin: [
-    'http://localhost:5173', 
+    'http://localhost:5173',
     'http://localhost:3000',
+    'https://puspend.netlify.app', 
+    
     'https://mern-gallery-project-26s7.vercel.app' // Ye raha naya link jo error de raha tha
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
