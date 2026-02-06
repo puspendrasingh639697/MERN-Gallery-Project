@@ -55,11 +55,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
+const app = express();
 
 const adminRoutes = require('./routes/adminRoutes'); 
 const imageRoutes = require('./routes/imageRoutes');
 
-const app = express();
+
 
 // --- CORS FIX START ---
 app.use(cors({
