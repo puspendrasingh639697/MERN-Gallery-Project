@@ -96,33 +96,38 @@ router.get('/all', async (req, res) => {
         res.status(500).json({ message: "Error fetching images" });
     }
 });
-
-// ❤️ Like Image Route
-// ❤️ Like Image Route (Safety Update)
 router.post('/like/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { userId } = req.body;
 
-        // 🔥 FIX: Valid ID check
         if (!id || id.length !== 24) {
-            console.log("Invalid ID received:", id);
             return res.status(400).json({ message: "Invalid Image ID!" });
         }
 
+        // 1. Pehle image fetch karo check karne ke liye
+        const image = await mongoose.connection.collection('images').findOne({ _id: new mongoose.Types.ObjectId(id) });
+
+        // 2. Agar 'likes' array nahi hai (yani number hai), toh usey empty array set kar do
+        if (!Array.isArray(image.likes)) {
+            await mongoose.connection.collection('images').updateOne(
+                { _id: new mongoose.Types.ObjectId(id) },
+                { $set: { likes: [] } }
+            );
+        }
+
+        // 3. Ab $addToSet safe hai!
         await mongoose.connection.collection('images').updateOne(
             { _id: new mongoose.Types.ObjectId(id) },
             { $addToSet: { likes: userId || "anonymous" } }
         );
 
-        const updatedImage = await mongoose.connection.collection('images').findOne(
-            { _id: new mongoose.Types.ObjectId(id) }
-        );
-
+        const updatedImage = await mongoose.connection.collection('images').findOne({ _id: new mongoose.Types.ObjectId(id) });
         res.json(updatedImage);
+        
     } catch (err) {
         console.error("Like Error:", err);
-        res.status(500).json({ message: "Server crash rok diya gaya!" });
+        res.status(500).json({ message: "Server error" });
     }
 });
 
