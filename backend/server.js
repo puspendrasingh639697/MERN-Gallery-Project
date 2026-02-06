@@ -65,14 +65,13 @@ app.use(express.json());
 
 // --- CORS FIX START ---
 app.use(cors({
-  // Yahan apna Vercel link add kar diya hai
   origin: [
     'http://localhost:5173', 
-    'http://localhost:3000', 
-    'https://mern-gallery-project-21u5.vercel.app' // Tera Vercel wala link
-  ], 
+    'https://mern-gallery-project-aapz.vercel.app' // Tera naya Vercel link
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 // --- CORS FIX END ---
 
