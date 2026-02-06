@@ -1,237 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import { FiUploadCloud, FiEdit3, FiTrash2, FiImage, FiLoader, FiMenu, FiX, FiLogOut } from 'react-icons/fi';
-
-// const UploadForm = () => {
-//   const [title, setTitle] = useState('');
-//   const [image, setImage] = useState(null);
-//   const [loading, setLoading] = useState(false);
-//   const [images, setImages] = useState([]);
-//   const [sidebarOpen, setSidebarOpen] = useState(false);
-//   const [activeTab, setActiveTab] = useState('upload');
-
-//   const fetchAdminImages = async () => {
-//     try {
-//       const res = await axios.get('https://mern-gallery-project.onrender.com/api/images/all');
-//       setImages(res.data);
-//     } catch (err) {
-//       console.error("Images load nahi hui", err);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchAdminImages();
-//   }, []);
-
-//   const handleUpload = async (e) => {
-//     e.preventDefault();
-//     if (!title || !image) return alert("Add both the title and the image.!");
-
-//     setLoading(true);
-//     const formData = new FormData();
-//     formData.append('title', title);
-//     formData.append('image', image);
-
-//     try {
-//       await axios.post('https://mern-gallery-project.onrender.com/api/images/upload', formData);
-//       alert("Image Uploaded Successfully!");
-//       setTitle('');
-//       setImage(null);
-//       fetchAdminImages();
-//       setActiveTab('gallery');
-//       setSidebarOpen(false);
-//     } catch (err) {
-//       console.error("Upload Fail:", err.response?.data);
-//       alert("Upload failed!");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const deleteImage = async (imgId) => {
-//     if (window.confirm("Should I delete it for sure?")) {
-//       try {
-//         await axios.delete(`https://mern-gallery-project.onrender.com/api/images/${imgId}`);
-//         fetchAdminImages();
-//       } catch (err) {
-//         alert("Delete fail!");
-//       }
-//     }
-//   };
-
-//   const handleEdit = async (id, currentTitle) => {
-//     const newTitle = prompt("Enter a new title:", currentTitle);
-//     if (!newTitle || newTitle === currentTitle) return;
-
-//     try {
-//       const res = await axios.put(`https://mern-gallery-project.onrender.com/api/images/edit/${id}`, {
-//         title: newTitle
-//       });
-//       if (res.status === 200) {
-//         fetchAdminImages();
-//       }
-//     } catch (err) {
-//       alert("Edit fail ho gaya!");
-//     }
-//   };
-
-//   const handleLogout = () => {
-//     localStorage.removeItem('adminToken');
-//     window.location.reload();
-//   };
-
-//   return (
-//     <div className="min-h-screen flex bg-white">
-
-
-//       <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static`}>
-//         <div className="flex items-center justify-between p-5 border-b">
-//           <h2 className="text-xl font-bold text-blue-700">Admin Panel</h2>
-//           <button className="md:hidden" onClick={() => setSidebarOpen(false)}>
-//             <FiX size={22} />
-//           </button>
-//         </div>
-
-//         <nav className="p-5 space-y-3 flex flex-col h-[calc(100%-80px)]">
-//           <div className="space-y-3 flex-1">
-//             <button
-//               onClick={() => {
-//                 setActiveTab('upload');
-//                 setSidebarOpen(false);
-//               }}
-//               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'upload' ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100'
-//                 }`}
-//             >
-//               <FiUploadCloud /> Upload
-//             </button>
-//             <button
-//               onClick={() => {
-//                 setActiveTab('gallery');
-//                 setSidebarOpen(false);
-//               }}
-//               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'gallery' ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100'
-//                 }`}
-//             >
-//               <FiImage /> Gallery
-//             </button>
-//           </div>
-
-//           {/* Logout in Sidebar */}
-
-//         </nav>
-//       </aside>
-
-//       {/* Mobile menu button */}
-//       <button
-//         className="md:hidden fixed top-4 left-4 z-50 bg-white border p-2 rounded-xl shadow"
-//         onClick={() => setSidebarOpen(true)}
-//       >
-//         <FiMenu size={22} />
-//       </button>
-
-
-//       <main className="flex-1 p-4 sm:p-6 md:p-10 overflow-y-auto bg-white">
-
-//         {/* Upload Section */}
-//         {activeTab === 'upload' && (
-//           <div className="w-full max-w-3xl mx-auto">
-//             <form onSubmit={handleUpload} className="bg-white p-5 sm:p-6 md:p-8 rounded-2xl shadow border border-slate-100">
-//               <h2 className="text-xl sm:text-2xl font-bold mb-6 text-slate-800 flex items-center gap-2 border-b pb-3">
-//                 <FiUploadCloud className="text-blue-500" /> Upload Image
-//               </h2>
-//               <div className="flex flex-col gap-5">
-//                 <div>
-//                   <label className="text-sm font-semibold text-slate-600 mb-1 block">Image Title</label>
-//                   <input
-//                     type="text"
-//                     placeholder="Title Name"
-//                     value={title}
-//                     onChange={(e) => setTitle(e.target.value)}
-//                     className="w-full border border-slate-200 p-3 sm:p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
-//                   />
-//                 </div>
-
-//                 <div>
-//                   <label className="text-sm font-semibold text-slate-600 mb-1 block">Select File</label>
-//                   <input
-//                     type="file"
-//                     onChange={(e) => setImage(e.target.files[0])}
-//                     className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 sm:file:py-3 file:px-4 sm:file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer"
-//                   />
-//                 </div>
-
-//                 <button
-//                   type="submit"
-//                   disabled={loading}
-//                   className={`font-bold py-3 sm:py-4 text-white transition-all transform active:scale-95 flex items-center justify-center gap-2 shadow-lg rounded-xl ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-700 hover:bg-blue-600 shadow-blue-200'}`}
-//                 >
-//                   {loading ? <FiLoader className="animate-spin text-xl" /> : <><FiUploadCloud size={20} /> Upload</>}
-//                 </button>
-//               </div>
-//             </form>
-//           </div>
-//         )}
-
-//         {/* Gallery Section */}
-//         {activeTab === 'gallery' && (
-//           <div className="w-full max-w-5xl mx-auto">
-//             <div className="bg-white p-5 sm:p-6 md:p-8 rounded-2xl shadow border border-slate-100 min-h-[500px]">
-//               <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-slate-800 flex items-center gap-2">
-//                 <FiImage className="text-blue-500" /> Gallery ({images.length})
-//               </h2>
-
-//               <div className="flex flex-col gap-4 sm:gap-5">
-//                 {images.length > 0 ? (
-//                   images.map((img) => (
-//                     <div key={img._id} className="group flex flex-col md:flex-row items-center justify-between bg-slate-50 p-4 sm:p-5 rounded-2xl border border-transparent hover:border-blue-200 hover:bg-white hover:shadow-md transition-all duration-300 gap-4">
-//                       <div className="flex items-center flex-col sm:flex-row gap-4 sm:gap-5 w-full">
-//                         <div className="relative overflow-hidden rounded-xl w-full sm:w-28 h-40 sm:h-24 shadow-sm">
-//                           <img src={img.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={img.title} />
-//                         </div>
-//                         <div className="text-center sm:text-left">
-//                           <p className="font-bold text-base sm:text-lg text-slate-800 capitalize leading-tight">{img.title}</p>
-//                           <p className="text-xs font-medium text-slate-400 mt-1 uppercase tracking-wider">
-//                             {new Date(img.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-//                           </p>
-//                         </div>
-//                       </div>
-
-//                       <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-//                         <button
-//                           onClick={() => handleEdit(img._id, img.title)}
-//                           className="w-full sm:w-auto bg-blue-600 text-white border border-blue-800 px-5 py-3  font-bold hover:bg-blue-700 active:scale-90 transition-all flex items-center justify-center gap-2"
-//                         >
-//                           <FiEdit3 size={18} /> Edit
-//                         </button>
-//                         <button
-//                           onClick={() => deleteImage(img._id)}
-//                           className="w-full sm:w-auto bg-blue-600 text-white border border-blue-800 px-5 py-3  font-bold hover:bg-blue-700 active:scale-90 transition-all flex items-center justify-center gap-2"
-//                         >
-//                           <FiTrash2 size={18} /> Delete
-//                         </button>
-//                       </div>
-
-//                     </div>
-//                   ))
-//                 ) : (
-//                   <div className="flex flex-col items-center justify-center py-20 sm:py-24 text-slate-300">
-//                     <FiImage size={60} className="mb-4 opacity-20" />
-//                     <p className="text-base sm:text-lg font-medium">Your gallery is empty</p>
-//                     <p className="text-sm">Start by uploading your first masterpiece!</p>
-//                   </div>
-//                 )}
-//               </div>
-//             </div>
-//           </div>
-//         )}
-
-//       </main>
-//     </div>
-//   );
-// };
-
-// export default UploadForm;
-
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -302,8 +68,7 @@ const UploadForm = () => {
  const deleteImage = async (imgId) => {
   if (window.confirm("Should I delete it for sure?")) {
     try {
-      // 🔥 FIX: API_URL aur ID ke beech mein "/delete" lagao
-      // Agar tumhara API_URL "https://.../api/images" hai
+     
       await axios.delete(`${API_URL}/delete/${imgId}`, getAuthHeaders());
       
       alert("Delete ho gayi! ✅");
@@ -335,112 +100,237 @@ const UploadForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
-      {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r shadow-sm transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static`}>
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold text-blue-700 tracking-tight">Admin Gallery</h2>
-          <button className="md:hidden text-slate-400" onClick={() => setSidebarOpen(false)}>
-            <FiX size={22} />
+   <div className="h-screen flex overflow-hidden bg-white">
+  {/* Left Sidebar - Fixed Position */}
+  <aside className="w-64 bg-black text-white flex flex-col border-r border-gray-800">
+    {/* Sidebar Header - Top Dark */}
+    <div className="p-5 border-b border-gray-800">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 flex items-center justify-center">
+          <FiImage size={20} />
+        </div>
+        <div>
+          <h2 className="font-bold text-lg">Admin Gallery</h2>
+          
+        </div>
+      </div>
+    </div>
+
+    {/* Navigation Menu */}
+    <nav className="flex-1 p-4">
+      <div className="space-y-1">
+        <button
+          onClick={() => setActiveTab('upload')}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            activeTab === 'upload'
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-300 hover:bg-gray-800'
+          }`}
+        >
+          <FiUploadCloud size={18} />
+          <span className="font-medium">Upload</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('gallery')}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            activeTab === 'gallery'
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-300 hover:bg-gray-800'
+          }`}
+        >
+          <FiImage size={18} />
+          <span className="font-medium">Gallery</span>
+          <span className="ml-auto bg-gray-800 text-xs px-2 py-1 rounded">
+            {images.length}
+          </span>
+        </button>
+      </div>
+    </nav>
+
+    {/* Logout Button - Bottom */}
+    <div className="p-4 border-t border-gray-800">
+      <button
+        onClick={handleLogout}
+        className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-gray-800 hover:text-red-300 transition-all w-full"
+      >
+        <FiLogOut size={18} />
+        <span className="font-medium">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  {/* Right Main Content - Full Height with Scroll */}
+  <main className="flex-1 flex flex-col overflow-hidden bg-white">
+    {/* Top Header Bar - Dark */}
+    <div className="bg-black text-white p-4 border-b border-gray-800">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            className="md:hidden p-2"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <FiMenu size={20} />
+          </button>
+          <h1 className="font-bold text-lg">Gallery Management</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-400">
+            {images.length} Images
+          </div>
+          <button
+            onClick={() => setActiveTab('upload')}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          >
+            <FiUploadCloud size={16} />
+            Upload New
           </button>
         </div>
+      </div>
+    </div>
 
-        <nav className="p-4 flex flex-col h-[calc(100%-85px)] justify-between">
-          <div className="space-y-2">
-            <button
-              onClick={() => { setActiveTab('upload'); setSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'upload' ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-100'}`}
-            >
-              <FiUploadCloud size={18} /> Upload New
-            </button>
-            <button
-              onClick={() => { setActiveTab('gallery'); setSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'gallery' ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-100'}`}
-            >
-              <FiImage size={18} /> My Gallery
-            </button>
-          </div>
+    {/* Content Area - Scrollable */}
+    <div className="flex-1 overflow-auto p-6">
+      {activeTab === 'upload' ? (
+        <div className="max-w-md mx-auto">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <FiUploadCloud size={24} className="text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">Upload New Image</h2>
+              <p className="text-gray-500">Add image to your gallery</p>
+            </div>
 
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-red-500 hover:bg-red-50 transition-all mt-auto"
-          >
-            <FiLogOut size={18} /> Logout
-          </button>
-        </nav>
-      </aside>
+            <form onSubmit={handleUpload} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Image Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8">
-        <button className="md:hidden mb-6 bg-white p-2 rounded-lg shadow-sm border" onClick={() => setSidebarOpen(true)}>
-          <FiMenu size={22} />
-        </button>
-
-        {activeTab === 'upload' ? (
-          <div className="max-w-2xl mx-auto mt-10">
-            <form onSubmit={handleUpload} className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
-              <h2 className="text-2xl font-bold mb-8 text-slate-800">Upload Masterpiece</h2>
-              <div className="space-y-6">
-                <div>
-                  <label className="text-sm font-bold text-slate-500 mb-2 block uppercase tracking-wider">Project Title</label>
-                  <input
-                    type="text"
-                    placeholder="E.g. Summer Vacation"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-bold text-slate-500 mb-2 block uppercase tracking-wider">Select Image</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Image
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer">
                   <input
                     type="file"
                     onChange={(e) => setImage(e.target.files[0])}
-                    className="block w-full text-sm text-slate-400 file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                    className="hidden"
+                    id="fileInput"
+                    accept="image/*"
                   />
+                  <label htmlFor="fileInput" className="cursor-pointer block">
+                    <FiImage className="mx-auto text-gray-400 mb-3" size={32} />
+                    <p className="text-gray-600 font-medium">
+                      {image ? image.name : 'Click to choose image'}
+                    </p>
+                    <p className="text-sm text-gray-400 mt-1">PNG, JPG, WEBP up to 5MB</p>
+                  </label>
                 </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`w-full font-bold py-4 text-white rounded-2xl transition-all flex items-center justify-center gap-2 ${loading ? 'bg-slate-300' : 'bg-blue-700 hover:bg-blue-800 shadow-lg shadow-blue-200'}`}
-                >
-                  {loading ? <FiLoader className="animate-spin" /> : <><FiUploadCloud /> Start Upload</>}
-                </button>
               </div>
+
+              <button
+                type="submit"
+                disabled={loading || !title || !image}
+                className={`w-full py-3 font-medium text-white rounded-lg transition-colors ${
+                  loading || !title || !image
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <FiLoader className="animate-spin" />
+                    Uploading...
+                  </span>
+                ) : (
+                  'Upload Image'
+                )}
+              </button>
             </form>
           </div>
-        ) : (
-          <div className="max-w-5xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold text-slate-800">Your Gallery ({images.length})</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-4">
-              {images.length > 0 ? (
-                images.map((img) => (
-                  <div key={img._id} className="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col md:flex-row items-center gap-6 hover:shadow-lg transition-all">
-                    <img src={img.imageUrl} className="w-full md:w-32 h-32 object-cover rounded-xl" alt={img.title} />
-                    <div className="flex-1 text-center md:text-left">
-                      <h3 className="font-bold text-lg text-slate-800">{img.title}</h3>
-                      <p className="text-slate-400 text-sm">{new Date(img.createdAt).toDateString()}</p>
+        </div>
+      ) : (
+        <div>
+          {/* Gallery Stats */}
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Gallery Images</h2>
+            <p className="text-gray-500">Manage your uploaded images</p>
+          </div>
+
+          {/* Images Grid */}
+          {images.length > 0 ? (
+            <div className="space-y-4">
+              {images.map((img) => (
+                <div
+                  key={img._id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-20 h-20 flex-shrink-0">
+                      <img
+                        src={img.imageUrl}
+                        className="w-full h-full object-cover rounded-lg"
+                        alt={img.title}
+                      />
                     </div>
-                    <div className="flex gap-2 w-full md:w-auto">
-                      <button onClick={() => handleEdit(img._id, img.title)} className="flex-1 md:flex-none p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all"><FiEdit3 /></button>
-                      <button onClick={() => deleteImage(img._id)} className="flex-1 md:flex-none p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all"><FiTrash2 /></button>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-800 text-lg mb-1">{img.title}</h3>
+                      <p className="text-sm text-gray-500">
+                        Uploaded: {new Date(img.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(img._id, img.title)}
+                        className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors flex items-center gap-2"
+                      >
+                        <FiEdit3 size={16} />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteImage(img._id)}
+                        className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-medium transition-colors flex items-center gap-2"
+                      >
+                        <FiTrash2 size={16} />
+                        Delete
+                      </button>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-                  <FiImage size={48} className="mx-auto text-slate-200 mb-4" />
-                  <p className="text-slate-400">No images found in your gallery.</p>
                 </div>
-              )}
+              ))}
             </div>
-          </div>
-        )}
-      </main>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiImage size={40} className="text-gray-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-400 mb-3">No Images Found</h3>
+              <p className="text-gray-400 mb-8">Your gallery is empty. Upload your first image!</p>
+              <button
+                onClick={() => setActiveTab('upload')}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 mx-auto"
+              >
+                <FiUploadCloud />
+                Upload First Image
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
+  </main>
+</div>
+
   );
 };
 
