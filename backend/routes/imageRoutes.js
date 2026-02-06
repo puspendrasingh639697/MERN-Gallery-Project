@@ -105,30 +105,31 @@ router.post('/like/:id', async (req, res) => {
             return res.status(400).json({ message: "Invalid Image ID!" });
         }
 
-        // 1. Pehle image fetch karo check karne ke liye
         const image = await mongoose.connection.collection('images').findOne({ _id: new mongoose.Types.ObjectId(id) });
 
-        // 2. Agar 'likes' array nahi hai (yani number hai), toh usey empty array set kar do
-        if (!Array.isArray(image.likes)) {
+        // Safety: Agar likes array nahi hai toh array bana do
+        let currentLikes = Array.isArray(image.likes) ? image.likes : [];
+
+        if (currentLikes.includes(userId)) {
+            // 🔥 UNLIKE logic: Agar ID pehle se hai, toh remove (pull) karo
             await mongoose.connection.collection('images').updateOne(
                 { _id: new mongoose.Types.ObjectId(id) },
-                { $set: { likes: [] } }
+                { $pull: { likes: userId } }
+            );
+        } else {
+            // ❤️ LIKE logic: Agar ID nahi hai, toh add karo
+            await mongoose.connection.collection('images').updateOne(
+                { _id: new mongoose.Types.ObjectId(id) },
+                { $addToSet: { likes: userId } }
             );
         }
-
-        // 3. Ab $addToSet safe hai!
-        await mongoose.connection.collection('images').updateOne(
-            { _id: new mongoose.Types.ObjectId(id) },
-            { $addToSet: { likes: userId || "anonymous" } }
-        );
 
         const updatedImage = await mongoose.connection.collection('images').findOne({ _id: new mongoose.Types.ObjectId(id) });
         res.json(updatedImage);
         
     } catch (err) {
-        console.error("Like Error:", err);
-        res.status(500).json({ message: "Server error" });
+        console.error("Like/Unlike Error:", err);
+        res.status(500).json({ message: "Operation failed" });
     }
 });
-
 module.exports = router;
