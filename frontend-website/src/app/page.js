@@ -25,7 +25,7 @@ export default function Home() {
 
   const fetchImages = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/images/all?sort=${sortBy}`);
+      const res = await axios.get(`https://mern-gallery-project.onrender.com/api/images/all?sort=${sortBy}`);
       setImages(res.data);
     } catch (err) {
       console.error("Error fetching images", err);
@@ -50,7 +50,7 @@ export default function Home() {
     try {
       const token = await user.getIdToken();
       const res = await axios.post(
-        `http://localhost:5000/api/images/like/${imageId}`,
+        `https://mern-gallery-project.onrender.com/api/images/like/${imageId}`,
         {},
         {
           headers: {
