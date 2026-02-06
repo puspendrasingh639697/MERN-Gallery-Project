@@ -61,6 +61,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const imageRoutes = require('./routes/imageRoutes');
 
 
+app.use(express.json());
 
 // --- CORS FIX START ---
 app.use(cors({
@@ -75,7 +76,7 @@ app.use(cors({
 }));
 // --- CORS FIX END ---
 
-app.use(express.json());
+
 
 // Routes
 app.use('/api/admin', adminRoutes); 
@@ -112,3 +113,6 @@ mongoose.connect(process.env.MONGO_URI)
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+

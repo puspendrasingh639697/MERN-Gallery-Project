@@ -10,7 +10,7 @@ const Login = ({ setToken }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('https://mern-gallery-project.onrender.com/api/admin/login', { email, password });
+      const res = await axios.post('http://localhost:5000/api/admin/login', { email, password });
       localStorage.setItem('adminToken', res.data.token);
       setToken(res.data.token);
     } catch (err) {
