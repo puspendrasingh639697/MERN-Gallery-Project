@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://puspendadmin.netlify.app',
+    'https://adminpu.netlify.app',
     'http://localhost:3000',
     'https://puspend.netlify.app', 
     
